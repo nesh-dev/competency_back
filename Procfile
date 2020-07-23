@@ -1,1 +1,1 @@
-web: gunicorn competency_proj.wsgi --log-file -
+web: gunicorn competency.wsgi --log-file -
