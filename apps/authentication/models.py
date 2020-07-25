@@ -51,6 +51,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(db_index=True, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_supervisor = models.BooleanField(default=False)
+    is_manager = models.BooleanField(default=False)
+    is_reportee = models.BooleanField(default=False)
     USERNAME_FIELD = 'user_name'
     REQUIRED_FIELDS = ['email']
     # Tells Django that the UserManager class defined above should manage
@@ -72,6 +75,9 @@ class User(AbstractBaseUser, PermissionsMixin):
             'email': self.email,
             'exp': int(date.strftime('%s')),
             'id': self.id,
+            'is_supervisor': self.is_supervisor,
+            'is_manager': self.is_manager,
+            'is_reportee': self.is_reportee,
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         return token.decode()
