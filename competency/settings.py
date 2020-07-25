@@ -68,9 +68,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'comps',
-    'comps.authentication',
+    'django.contrib.staticfiles',    
+    'apps.authentication',
     'rest_framework',
     
 ]
@@ -123,7 +122,7 @@ WSGI_APPLICATION = 'competency.wsgi.application'
 # }
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'comps.jwt.JWTAuthentication',
+        'apps.authentication.jwt.JWTAuthentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),

@@ -3,7 +3,7 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import exceptions
-from .authentication.models import User
+from .models import User
 
 def get_token_data(token):
     """
