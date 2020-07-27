@@ -69,7 +69,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
         fields = ['user_name', 'email',
-                  'password','confirm_password',  'token']
+                  'password','confirm_password','is_supervisor','is_manager','is_reportee',  'token']
     @classmethod
     def create(self, data):
         del data["confirm_password"]

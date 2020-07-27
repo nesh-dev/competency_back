@@ -71,6 +71,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',    
     'apps.authentication',
     'rest_framework',
+    'apps.supervisor',
+    'apps.manager',
+    'apps.reportee',
     
 ]
 AUTH_USER_MODEL = 'authentication.User'
