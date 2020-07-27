@@ -53,7 +53,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_password_(data):
         password = data.get('password', None)
-        confirm_password = data.get('password', None)
+        confirm_password = data.get('confirm_password', None)
         # As mentioned above, an user_name is required. Raise an exception if an
         # user_name is not provided.
         # As mentioned above, a password is required. Raise an exception if a
@@ -116,4 +116,41 @@ class LoginSerializer(serializers.Serializer):
             'email':user.email,
             'token': user.token,
         }
+
+
+class EmailSerializer(serializers.Serializer):
+    """
+    serializes email
+    """
+    email = serializers.EmailField(max_length=255, required=True)       
          
+
+
+
+class PasswordUpdateSerializer(serializers.Serializer):
+    """Serializers registration requests and creates a new user."""
+    password = serializers.CharField(
+            required=True,
+            allow_null=False,
+            write_only=True,
+            min_length=6,
+    )
+    confirm_password = serializers.CharField(
+            write_only=True,
+            required=True,
+            allow_null=False,
+            min_length=6,)
+
+    @staticmethod
+    def validate_password_(data):
+        password = data.get('password', None)
+        confirm_password = data.get('confirm_password', None)
+        # As mentioned above, an user_name is required. Raise an exception if an
+        # user_name is not provided.
+        # As mentioned above, a password is required. Raise an exception if a
+        # password is not provided.
+        if confirm_password != password:
+            raise serializers.ValidationError(
+                'Confirmed Password and Password should match .'
+            )
+        return data 

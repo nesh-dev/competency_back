@@ -15,6 +15,7 @@ import django_heroku
 import dj_database_url
 from decouple import config,Csv
 
+
 MODE=config("MODE", default="dev")
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -180,10 +181,19 @@ STATICFILES_DIRS = (
 )
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
+ 
 # configuring the location for media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+EMAIL_SENDER =os.getenv("EMAIL_SENDER")
+# DEFAULT_FROM_EMAIL =os.getenv("DEFAULT_FROM_EMAIL")
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+PASSWORD_RESET_URL=os.getenv("PASSWORD_RESET_URL")
 
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
