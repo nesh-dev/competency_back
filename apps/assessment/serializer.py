@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Competency,Strands,AssessmentModel
 
+
 class CompetencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Competency
@@ -24,4 +25,3 @@ class AssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentModel
         fields = '__all__'
-

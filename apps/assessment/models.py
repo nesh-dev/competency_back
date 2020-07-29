@@ -26,8 +26,10 @@ class Strands(models.Model):
 
 class AssessmentModel(models.Model):
     strands = models.ForeignKey(Strands,on_delete=models.CASCADE)
+    competency = models.ForeignKey(Competency,on_delete=models.CASCADE)
     person_assessing = models.ForeignKey(User,on_delete=models.CASCADE,related_name='assesser')
     person_assessed = models.ForeignKey(User,on_delete=models.CASCADE,related_name='assessee')
+    competency_num = models.IntegerField()
     strands_num = models.IntegerField()
     assessing_num = models.IntegerField()
     assessed_num = models.IntegerField()

@@ -11,4 +11,6 @@ urlpatterns = [
     url(r'^assessments/list/$', views.AssessmentList.as_view()),
     url(r'^assessee/(\d+)/$', views.SelfAssessment.as_view()),
     url(r'^assesser/(\d+)/$', views.AssesserAssessment.as_view()),
+    path('assesser/assessee/average/<int:pk>/<int:id1>/<int:id>/', views.GetAssesserAssesseeAverage.as_view()),
+    path('assessee/average/<int:pk>/<int:id>/', views.GetAssesseeAverage.as_view()),
 ]
