@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/v1/', include('apps.supervisor.urls')),
     path('api/v1/', include('apps.manager.urls')),
     path('api/v1/', include('apps.reportee.urls')),
+    path('api/v1/', include('apps.assessment.urls')),
 ]
