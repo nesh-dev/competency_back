@@ -74,13 +74,15 @@ INSTALLED_APPS = [
     'apps.supervisor',
     'apps.manager',
     'apps.reportee',
-    'apps.assessment'
+    'apps.assessment',
+    'corsheaders',
     
 ]
 AUTH_USER_MODEL = 'authentication.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -188,3 +190,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Configure Django App for Heroku.
 django_heroku.settings(locals())
+
+
+CORS_ORIGIN_ALLOW_ALL = True

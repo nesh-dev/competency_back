@@ -5,6 +5,12 @@ from rest_framework import status
 from rest_framework.response  import Response
 from rest_framework.permissions import AllowAny
 
+from django.contrib.auth import get_user_model as user_model
+User = user_model()
+from apps.supervisor.models import Department
+from apps.manager.models import ManagerProfile
+from apps.reportee.models import ReporteeProfile
+
 # Create your views here.
 class RegistrationAPIView(generics.CreateAPIView):
     # Allow any user (authenticated or not) to hit this endpoint.
@@ -20,6 +26,20 @@ class RegistrationAPIView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.validate_password_(user)
         serializer.save()
+
+        if_reportee = serializer.validated_data['is_reportee']        
+        if if_reportee:
+            uname = serializer.validated_data['user_name']
+            this_user = User.objects.get(user_name = uname)
+            reportee_profile = ReporteeProfile.objects.get(user = this_user)
+            current_manager = request.user
+            manager_profile = ManagerProfile.objects.get(user = current_manager)
+            manager_dept = Department.objects.get(manager = manager_profile)
+            reportee_profile.department = manager_dept
+            reportee_profile.save()
+
+
+
         data = serializer.data
         return_message = {'message':"Signup Successful",
                           'user': data}

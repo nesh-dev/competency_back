@@ -13,9 +13,11 @@ from .serializer import ReporteeSerializer
 # Create your views here.
 class ReporteeProfileView(APIView):
     permission_classes = (IsAuthenticated,)
-    def check_role(self, request):
-        if request.user.is_supervisor or request.user.is_manager or request.user.is_reportee:
+    def check_role(self, request, pk):
+        if request.user.is_supervisor or request.user.is_manager:
             pass
+        elif request.user.is_reportee and request.user == ReporteeProfile.objects.get(pk=pk).user:
+            pass                         
         else:
             raise Http404()       
     
@@ -26,13 +28,13 @@ class ReporteeProfileView(APIView):
             raise Http404()    
 
     def get(self, request, pk, format=None):
-        self.check_role(request)
+        self.check_role(request, pk)
         this_reportee = self.get_reportee(pk)
         serializers = ReporteeSerializer(this_reportee)
         return Response(serializers.data)
 
     def put(self, request, pk, format=None):
-        self.check_role(request)
+        self.check_role(request,pk)
         this_reportee = self.get_reportee(pk)
         serializers = ReporteeSerializer(this_reportee, request.data, partial=True)
         if serializers.is_valid():
@@ -42,7 +44,7 @@ class ReporteeProfileView(APIView):
             return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
-        self.check_role(request)
+        self.check_role(request,pk)
         this_reportee = self.get_reportee(pk)
         this_reportee.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

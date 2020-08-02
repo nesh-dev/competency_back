@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth import get_user_model as user_model
 User = user_model()
 from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.dispatch import receiver 
+from apps.supervisor.models import Department
+from apps.manager.models import ManagerProfile
 
 # Create your models here.
 class ReporteeProfile(models.Model):
@@ -13,6 +15,7 @@ class ReporteeProfile(models.Model):
     bio = models.TextField(blank=True)
     profile_photo = models.ImageField(upload_to = 'profilepics/', blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department,on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.first_name 
@@ -23,7 +26,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:  
         if instance.is_reportee:  
             ReporteeProfile.objects.create(user=instance) 
-
+            
         else:
             pass
     
