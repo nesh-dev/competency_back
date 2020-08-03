@@ -27,18 +27,17 @@ class RegistrationAPIView(generics.CreateAPIView):
         serializer.validate_password_(user)
         serializer.save()
 
-        if_reportee = serializer.validated_data['is_reportee']        
-        if if_reportee:
-            uname = serializer.validated_data['user_name']
-            this_user = User.objects.get(user_name = uname)
-            reportee_profile = ReporteeProfile.objects.get(user = this_user)
-            current_manager = request.user
-            manager_profile = ManagerProfile.objects.get(user = current_manager)
-            manager_dept = Department.objects.get(manager = manager_profile)
-            reportee_profile.department = manager_dept
-            reportee_profile.save()
-
-
+        if serializer.data.get('is_reportee', None):
+            if_reportee = serializer.validated_data['is_reportee']        
+            if if_reportee:
+                uname = serializer.validated_data['user_name']
+                this_user = User.objects.get(user_name = uname)
+                reportee_profile = ReporteeProfile.objects.get(user = this_user)
+                current_manager = request.user
+                manager_profile = ManagerProfile.objects.get(user = current_manager)
+                manager_dept = Department.objects.get(manager = manager_profile)
+                reportee_profile.department = manager_dept
+                reportee_profile.save()
 
         data = serializer.data
         return_message = {'message':"Signup Successful",

@@ -193,3 +193,4 @@ django_heroku.settings(locals())
 
 
 CORS_ORIGIN_ALLOW_ALL = True
+REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema' }
