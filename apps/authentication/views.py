@@ -1,3 +1,5 @@
+import random
+import string
 from django.shortcuts import render
 from rest_framework import generics
 from .serializers import RegistrationSerializer,LoginSerializer
@@ -7,9 +9,10 @@ from rest_framework.permissions import AllowAny
 
 from django.contrib.auth import get_user_model as user_model
 User = user_model()
-from apps.supervisor.models import Department
+from apps.supervisor.models import Department, SupervisorProfile
 from apps.manager.models import ManagerProfile
 from apps.reportee.models import ReporteeProfile
+from .email import send_signup_email
 
 # Create your views here.
 class RegistrationAPIView(generics.CreateAPIView):
@@ -38,6 +41,24 @@ class RegistrationAPIView(generics.CreateAPIView):
                 manager_dept = Department.objects.get(manager = manager_profile)
                 reportee_profile.department = manager_dept
                 reportee_profile.save()
+                rand_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                this_user.set_password(rand_password)
+                this_user.save()
+                manager_name = f"{manager_profile.first_name} {manager_profile.last_name}"
+                send_signup_email(manager_name,this_user.user_name,this_user.user_name,rand_password,this_user.email)
+
+        elif serializer.data.get('is_manager', None):
+            if_manager = serializer.validated_data['is_manager']        
+            if if_manager:
+                uname = serializer.validated_data['user_name']
+                this_user = User.objects.get(user_name = uname)                
+                current_supervisor = request.user
+                supervisor_profile = SupervisorProfile.objects.get(user = current_supervisor)                
+                rand_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                this_user.set_password(rand_password)
+                this_user.save()
+                supervisor_name = f"{supervisor_profile.first_name} {supervisor_profile.last_name}"
+                send_signup_email(supervisor_name,this_user.user_name,this_user.user_name,rand_password,this_user.email)
 
         data = serializer.data
         return_message = {'message':"Signup Successful",
