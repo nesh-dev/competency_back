@@ -4,12 +4,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import Competency,Strands,AssessmentModel
-from .serializer import CompetencySerializer,StrandsSerializer,AssessmentSerializer
+from .models import Competency,Strands,AssessmentModel,SelfAssessmentAverage,PersonAssessingAverage
+from .serializer import CompetencySerializer,StrandsSerializer,AssessmentSerializer,PersonAssessingSerializer,SelfAssessmentSerializer
 
 from apps.reportee.models import ReporteeProfile
 from apps.manager.models import ManagerProfile
-from apps.supervisor.models import SupervisorProfile, Department
+from apps.supervisor.models import SupervisorProfile
 from django.contrib.auth import get_user_model as user_model
 User = user_model()
 
@@ -159,10 +159,12 @@ class AssessmentList(APIView):
             this_assesser_id = int(serializers.validated_data['assessing_num'])
             this_assessee_id = int(serializers.validated_data['assessed_num'])
             this_strands_id = int(serializers.validated_data['strands_num'])
+            this_competency_id = int(serializers.validated_data['competency_num'])
             assess_value = int(serializers.validated_data['value'])
             this_strands = Strands.objects.get(pk=this_strands_id)
             this_assesser = User.objects.get(pk=this_assesser_id)
             this_assessee = User.objects.get(pk=this_assessee_id)
+            this_competency = Competency.objects.get(pk=this_competency_id)
 
             if this_assesser != this_assessee:
                 try:
@@ -180,7 +182,7 @@ class AssessmentList(APIView):
                         message = {'error':"The reportee is not in your department",}
                         return Response(message, status=status.HTTP_400_BAD_REQUEST) 
             
-            serializers.save(person_assessing=this_assesser, person_assessed= this_assessee, value = assess_value, strands = this_strands )
+            serializers.save(person_assessing=this_assesser, person_assessed= this_assessee, value = assess_value, strands = this_strands, competency = this_competency )
             return Response(serializers.data, status=status.HTTP_201_CREATED)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -251,4 +253,85 @@ class AssesserAssessment(APIView):
             raise Http404()
         assessments = self.get_assesser_assessment(pk)
         serializers = AssessmentSerializer(assessments, many= True)
+        return Response(serializers.data)
+
+class CompetencyStrands(APIView):
+
+    def get(self, request, id, format=None):
+        strands = Strands.objects.filter(competency = id)
+        serializers = StrandsSerializer(strands, many=True)
+        return Response(serializers.data)
+
+class GetAssesserAverage(APIView):
+
+    def save_average(self ,pk , id1, id):
+        values = AssessmentModel.objects.filter(competency = pk,person_assessed = id1, person_assessing = id).values_list('value', flat = True)
+        sum_num = 0
+        asses = 0
+
+        if len(values) >= 1:
+            for value in values:
+                sum_num = sum_num + value
+
+            average = sum_num // len(values)
+            return average
+
+        else:
+            return asses
+
+
+    def post(self, request, pk, id, id1, format=None):
+        average = self.save_average(pk,id1,id)
+        serializers = PersonAssessingSerializer(data=request.data, partial= True)
+        if serializers.is_valid():
+            this_assessee_id = int(serializers.validated_data['assessee_num'])
+            this_competency_id = int(serializers.validated_data['competency_num'])
+            this_assessee = User.objects.get(pk=this_assessee_id)
+            this_competency = Competency.objects.get(pk=this_competency_id)
+            serializers.save(average = average, competency = this_competency,assessee = this_assessee)
+            return Response(serializers.data, status=status.HTTP_201_CREATED)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AssessmentDoneAverageList(APIView):
+
+    def get(self, request, id, format=None):
+        averages = SelfAssessmentAverage.objects.filter(assessee = id)
+        serializers = SelfAssessmentSerializer(averages, many=True)
+        return Response(serializers.data)
+   
+class GetAssesseeAverage(APIView):
+
+    def save_average(self ,pk , id):
+        values = AssessmentModel.objects.filter(competency = pk, person_assessed = id, person_assessing = id).values_list('value', flat = True)
+        sum_num = 0
+        asses = 0
+
+        if len(values) >= 1:
+            for value in values:
+                sum_num = sum_num + value
+
+            average = sum_num // len(values)
+            return average
+
+        else:
+            return asses
+
+
+    def post(self, request, pk, id, format=None):
+        average = self.save_average(pk,id)
+        serializers = SelfAssessmentSerializer(data=request.data, partial= True)
+        if serializers.is_valid():
+            this_assessee_id = int(serializers.validated_data['assessee_num'])
+            this_competency_id = int(serializers.validated_data['competency_num'])
+            this_assessee = User.objects.get(pk=this_assessee_id)
+            this_competency = Competency.objects.get(pk=this_competency_id)
+            serializers.save(average = average, competency = this_competency,assessee = this_assessee)
+            return Response(serializers.data, status=status.HTTP_201_CREATED)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SelfAssessmentAverageList(APIView):
+
+    def get(self, request, id, format=None):
+        averages = SelfAssessmentAverage.objects.filter(assessee = id)
+        serializers = SelfAssessmentSerializer(averages, many=True)
         return Response(serializers.data)
