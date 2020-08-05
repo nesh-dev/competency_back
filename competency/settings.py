@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'apps.assessment',
     'corsheaders',
     'drf_yasg',
+    'apps.dashboards',
     
 ]
 AUTH_USER_MODEL = 'authentication.User'

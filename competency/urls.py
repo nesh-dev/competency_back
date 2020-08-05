@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/v1/', include('apps.manager.urls')),
     path('api/v1/', include('apps.reportee.urls')),
     path('api/v1/', include('apps.assessment.urls')),
+    path('api/v1/', include('apps.dashboards.urls')),
     # path('docs/', include_docs_urls(title='Competency_back API', public=False)),
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     url(r'^api-docs/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

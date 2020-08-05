@@ -9,9 +9,10 @@ from .serializer import CompetencySerializer,StrandsSerializer,AssessmentSeriali
 
 from apps.reportee.models import ReporteeProfile
 from apps.manager.models import ManagerProfile
-from apps.supervisor.models import SupervisorProfile
+from apps.supervisor.models import SupervisorProfile, Department
 from django.contrib.auth import get_user_model as user_model
 User = user_model()
+from apps.dashboards.models import DepartmentsRating, OrganizationalOverview
 
 # Create your views here.
 class CompetencyList(APIView):
@@ -171,7 +172,9 @@ class AssessmentList(APIView):
                     AssessmentModel.objects.get(person_assessing = this_assessee, person_assessed = this_assessee)
                 except AssessmentModel.DoesNotExist:
                     message = {'error':"This user hasn't done a self-assessment yet",}
-                    return Response(message, status=status.HTTP_400_BAD_REQUEST)  
+                    return Response(message, status=status.HTTP_400_BAD_REQUEST) 
+                except AssessmentModel.MultipleObjectsReturned: 
+                    pass
                 if this_assesser.is_supervisor and this_assessee.is_reportee: 
                     message = {'error':"A supervisor can't assess a reportee",}
                     return Response(message, status=status.HTTP_400_BAD_REQUEST) 
@@ -183,6 +186,88 @@ class AssessmentList(APIView):
                         return Response(message, status=status.HTTP_400_BAD_REQUEST) 
             
             serializers.save(person_assessing=this_assesser, person_assessed= this_assessee, value = assess_value, strands = this_strands, competency = this_competency )
+
+
+            # DepartmentsRatings
+            if this_assessee.is_reportee:
+                reportee_dept = this_assessee.reporteeprofile.department
+                reportees_in_this_dept = ReporteeProfile.objects.filter(department = reportee_dept)
+                avg_list = []
+                for one_reportee in reportees_in_this_dept:
+                    one_user = one_reportee.user
+                    one_user_assessments = AssessmentModel.objects.filter(person_assessed=one_user)                    
+                    for one_assessment in one_user_assessments:
+                        avg_list.append(one_assessment.value)
+                list_len = len(avg_list)
+                dept_avg = sum(avg_list)/list_len
+
+                completed_assessments = 0
+                all_strands = Strands.objects.all()
+                num_of_strands = len(all_strands)
+                for one_reportee in reportees_in_this_dept:
+                    one_user = one_reportee.user
+                    one_user_assessments = AssessmentModel.objects.filter(person_assessed=one_user) 
+                    if len(one_user_assessments)==num_of_strands*2:
+                        completed_assessments = completed_assessments+1
+                percent_progress = (completed_assessments/len(reportees_in_this_dept))*100
+
+                recorded_departments = DepartmentsRating.objects.all()
+                dept_list = []
+                for dept in recorded_departments:
+                    dept_list.append(dept.department)
+                if reportee_dept in dept_list:
+                    this_dept = DepartmentsRating.objects.get(department = reportee_dept)
+                    this_dept.percent_progress = percent_progress
+                    this_dept.rating = dept_avg
+                    this_dept.save()
+                else:
+                    new_dept_rating = DepartmentsRating()
+                    new_dept_rating.department = reportee_dept
+                    new_dept_rating.percent_progress = percent_progress
+                    new_dept_rating.rating = dept_avg
+                    new_dept_rating.save()
+
+            # OrganizationalOverview
+            org_completed_assessments = 0
+            all_reportees = ReporteeProfile.objects.all()
+            for single_reportee in all_reportees:
+                single_reportee_user = single_reportee.user
+                single_reportee_assessments = AssessmentModel.objects.filter(person_assessed=single_reportee_user)
+                all_strands = Strands.objects.all()
+                num_of_strands = len(all_strands)
+                if len(single_reportee_assessments)==num_of_strands*2:
+                    org_completed_assessments=org_completed_assessments+1
+
+            all_managers = ManagerProfile.objects.all()
+            for single_manager in all_managers:
+                single_manager_user = single_manager.user
+                single_manager_assessments = AssessmentModel.objects.filter(person_assessed=single_manager_user)
+                all_strands = Strands.objects.all()
+                num_of_strands = len(all_strands)
+                if len(single_manager_assessments)==num_of_strands*2:
+                    org_completed_assessments=org_completed_assessments+1
+
+            expected_assessments = len(all_reportees)+len(all_managers)
+            pending_assessments = expected_assessments-org_completed_assessments
+            
+            num_of_departments = len(Department.objects.all())
+
+            organizational_table = OrganizationalOverview.objects.all()
+            if len(organizational_table)>0:
+                for org in organizational_table:
+                    org.completed_assessments = org_completed_assessments
+                    org.num_of_departments = num_of_departments
+                    org.expected_assessments = expected_assessments
+                    org.pending_assessments = pending_assessments
+                    org.save()
+            else:
+                this_organizational_table = OrganizationalOverview()
+                this_organizational_table.completed_assessments = org_completed_assessments
+                this_organizational_table.num_of_departments = num_of_departments
+                this_organizational_table.expected_assessments = expected_assessments
+                this_organizational_table.pending_assessments = pending_assessments
+                this_organizational_table.save()
+            
             return Response(serializers.data, status=status.HTTP_201_CREATED)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
