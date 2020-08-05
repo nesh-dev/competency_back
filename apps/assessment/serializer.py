@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Competency,Strands,AssessmentModel,SelfAssessmentAverage,PersonAssessingAverage
+from .models import Competency,Strands,AssessmentModel
+
 
 class CompetencySerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,18 +24,4 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentModel
-        fields = '__all__'
-
-class PersonAssessingSerializer(serializers.ModelSerializer):
-    competency = CompetencySerializer()
-
-    class Meta:
-        model = PersonAssessingAverage
-        fields = '__all__'
-
-class SelfAssessmentSerializer(serializers.ModelSerializer):
-    competency = CompetencySerializer()
-
-    class Meta:
-        model = SelfAssessmentAverage
         fields = '__all__'

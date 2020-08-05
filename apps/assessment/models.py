@@ -36,19 +36,3 @@ class AssessmentModel(models.Model):
     value = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-class SelfAssessmentAverage(models.Model):
-    competency = models.ForeignKey(Competency,on_delete=models.CASCADE)
-    assessee = models.ForeignKey(User,on_delete=models.CASCADE,related_name='assessee_average')
-    assessee_num = models.IntegerField()
-    competency_num = models.IntegerField()
-    average = models.IntegerField(default=0) 
-    created_at = models.DateTimeField(auto_now_add=True)
-
-class PersonAssessingAverage(models.Model):
-    competency = models.ForeignKey(Competency,on_delete=models.CASCADE)
-    assessee = models.ForeignKey(User,on_delete=models.CASCADE,related_name='assesser_average')
-    assessee_num = models.IntegerField()
-    competency_num = models.IntegerField()
-    average = models.IntegerField(default=0) 
-    created_at = models.DateTimeField(auto_now_add=True)
